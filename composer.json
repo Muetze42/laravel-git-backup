@@ -1,0 +1,44 @@
+{
+    "name": "norman-huth/laravel-git-backup",
+    "description": "A Laravel package to backup your application on GitHub",
+    "keywords": [
+        "spatie-db-dumper",
+        "backup",
+        "database",
+        "laravel-backup",
+        "git",
+        "git-backup"
+    ],
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "NormanHuth\\LaravelGitBackup\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Norman Huth",
+            "homepage": "https://huth.it"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "ext-zip": "^1.14.0",
+        "illuminate/config": "^9.0|^10.0",
+        "illuminate/container": "^9.0|^10.0",
+        "illuminate/console": "^9.0|^10.0",
+        "illuminate/events": "^9.0|^10.0",
+        "illuminate/filesystem": "^9.0|^10.0",
+        "spatie/db-dumper": "^3.0",
+        "league/flysystem": "^3.11"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NormanHuth\\LaravelGitBackup\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
