@@ -8,7 +8,7 @@ A few code parts are taken from [spatie/laravel-backup](https://github.com/spati
 
 ## Configuration
 
-In the default configuration, Laravel `storage/app` folder uses for backup include a dump of `mysql` database connection. In this case, the Git repository is located here: `storage/app/.git`.
+In the default configuration, Laravel `storage/app` folder uses for backup include a dump of `mysql` database connection. In this case, the Backup Git repository is located in the `storage/app/.git` directory.
 
 To change the configuration publish the [config/git-backup.php](config/git-backup.php) file via command line:
 
