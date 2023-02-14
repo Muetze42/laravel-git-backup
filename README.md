@@ -31,3 +31,12 @@ For example use [Laravel Task Scheduling](https://laravel.com/docs/scheduling)
 ```shell
 $schedule->command('git:backup:run')->dailyAt('4:00');
 ```
+
+## Notice
+
+Don't forget to configure global Git settings
+
+```shell
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+```
