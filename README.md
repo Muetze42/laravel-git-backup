@@ -8,11 +8,26 @@ A few code parts are taken from [spatie/laravel-backup](https://github.com/spati
 
 ## Configuration
 
-In the default configuration, Laravel `storage/app` folder uses for backup include a dump of `mysql` database connection. This directory need the Backup Git.
+In the default configuration, Laravel `storage/app` folder uses for backup include a dump of `mysql` database connection. In this case, the Git repository is located here: `storage/app/.git`.
 
 To change the configuration publish the [config/git-backup.php](config/git-backup.php) file via command line:
 
-````shell
+```shell
 php artisan vendor:publish --provider="NormanHuth\LaravelGitBackup\ServiceProvider"
-````
+```
 
+## Usage
+
+### Run the backup manually
+
+```shell
+php artisan git:backup:run
+```
+
+### Scheduling
+
+For example use [Laravel Task Scheduling](https://laravel.com/docs/scheduling)
+
+```shell
+$schedule->command('git:backup:run')->dailyAt('4:00');
+```
