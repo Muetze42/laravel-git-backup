@@ -59,6 +59,20 @@ return [
         'directory' => 'database',
         /*
         |--------------------------------------------------------------------------
+        | Filename include path (optional)
+        |--------------------------------------------------------------------------
+        |
+        | * Use \Carbon\Carbon method between `{}`
+        | * Or {database}, {username}, {driver}, {host} for database config
+        | * Or {date-Y}, {date-Y-m-d} etc for date formatted
+        | * Without file extension
+        |
+        */
+        'filenames' => [
+            'mysql' => '{driver}/{database}-{toDateTimeString}',
+        ],
+        /*
+        |--------------------------------------------------------------------------
         | Optional archive encryption
         |--------------------------------------------------------------------------
         */

@@ -5,6 +5,7 @@ namespace NormanHuth\LaravelGitBackup\Console\Commands;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Str;
@@ -45,13 +46,6 @@ class GitBackupCommand extends Command
     protected Filesystem $disk;
 
     /**
-     * The datetime string
-     *
-     * @var string
-     */
-    protected string $fileDateTimeString;
-
-    /**
      * The name and signature of the console command.
      *
      * @var string
@@ -66,13 +60,20 @@ class GitBackupCommand extends Command
     protected $description = 'Command description';
 
     /**
+     * The Carbon instance for the current time
+     *
+     * @var Carbon
+     */
+    protected Carbon $now;
+
+    /**
      * Execute the console command.
      *
      * @throws Exception
      */
     public function handle()
     {
-        $this->fileDateTimeString = Str::slug(now()->toDateTimeString());
+        $this->now = now();
 
         $this->directory = config('git-backup.directory', storage_path('app'));
         $this->dbDir = trim(config('git-backup.database.directory', 'database'), '/\\');
@@ -100,8 +101,8 @@ class GitBackupCommand extends Command
         $gitCommand = preg_replace_callback(
             '/{(.*?)}/',
             function ($match) {
-                if (isset($match[1]) && method_exists(now(), $match[1])) {
-                    return now()->{$match[1]}();
+                if (isset($match[1]) && method_exists($this->now, $match[1])) {
+                    return $this->now->{$match[1]}();
                 }
                 return $match[0];
             },
@@ -175,11 +176,55 @@ class GitBackupCommand extends Command
             $dumper = $dumper->setSocket($dbConfig['unix_socket']);
         }
 
-        $targetDir = $this->dbDir.DIRECTORY_SEPARATOR.$databaseConfig['driver'];
-        if (!$this->disk->directoryExists($targetDir)) {
-            $this->disk->makeDirectory($targetDir);
+        $targetDir = $this->dbDir.DIRECTORY_SEPARATOR;
+
+        $filename = trim(config(
+            'git-backup.database.filenames.'.$connection,
+            '{driver}/{database}-{toDateTimeString}'
+        ), '/\\');
+        $replace = [
+            '{database}' => $databaseConfig['connect_via_database'] ?? $databaseConfig['database'],
+            '{username}' => $databaseConfig['username'],
+            '{driver}'   => $databaseConfig['driver'],
+            '{host}'     => $databaseConfig['host'],
+        ];
+        $filename = str_replace(array_keys($replace), array_values($replace), $filename);
+        $filename = preg_replace_callback(
+            '/{date-(.*?)}/',
+            function ($match) {
+                if (isset($match[1])) {
+                    return $this->now->format($match[1]);
+                }
+                return $match[0];
+            },
+            $filename
+        );
+        $filename = preg_replace_callback(
+            '/{(.*?)}/',
+            function ($match) {
+                if (isset($match[1]) && method_exists($this->now, $match[1])) {
+                    return $this->now->{$match[1]}();
+                }
+                return $match[0];
+            },
+            $filename
+        );
+        $filename = str_replace('\\', '/', $filename);
+        $filename = explode('/', $filename);
+        $filename = array_map(function ($value) {
+            return Str::slug($value);
+        }, $filename);
+        $filePath = $filename;
+        unset($filePath[array_key_last($filePath)]);
+        $filename = implode(DIRECTORY_SEPARATOR, $filename);
+        $filePath = implode(DIRECTORY_SEPARATOR, $filePath);
+
+        if (!$this->disk->directoryExists($targetDir.DIRECTORY_SEPARATOR.$filePath)) {
+            $this->disk->makeDirectory($targetDir.DIRECTORY_SEPARATOR.$filePath);
         }
-        $target = $targetDir.DIRECTORY_SEPARATOR.Str::slug(basename($databaseConfig['database']).'-'.$this->fileDateTimeString);
+
+        $target = $targetDir.DIRECTORY_SEPARATOR.$filename;
+
         $sqlFilePath = $target.'.sql';
         $sqlFile = $this->disk->path($sqlFilePath);
         $zipFile = $this->disk->path($target.'.zip');
